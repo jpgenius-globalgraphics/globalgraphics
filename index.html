@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GlobalGraphics — Athlete Graphics</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --black: #080808;
+    --surface: #111111;
+    --surface2: #1a1a1a;
+    --border: rgba(255,255,255,0.08);
+    --accent: #0429C6;
+    --accent2: #00E5FF;
+    --white: #F5F5F0;
+    --muted: #888;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-ui: 'Barlow Condensed', sans-serif;
+    --font-body: 'Barlow', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 12px; height: 12px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid rgba(4,41,198,0.5);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.08s ease;
+  }
+
+  /* Nav */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.5rem 4rem;
+    background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent);
+    backdrop-filter: blur(2px);
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--black);
+    background: var(--accent);
+    padding: 0.6rem 1.4rem;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .nav-cta:hover { background: #1a40d6; transform: translateY(-1px); }
+
+  /* Hero */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 0 4rem 5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 70% 40%, rgba(4,41,198,0.07) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 70%, rgba(0,229,255,0.05) 0%, transparent 60%);
+  }
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+  }
+  .hero-eyebrow {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.2rem;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 12vw, 11rem);
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.4s forwards;
+  }
+  .hero-title .outline {
+    -webkit-text-stroke: 1px rgba(255,255,255,0.3);
+    color: transparent;
+  }
+  .hero-title .accent { color: var(--accent); }
+  .hero-sub {
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 420px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.6s forwards;
+  }
+  .hero-actions {
+    display: flex; gap: 1rem; align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.8s forwards;
+  }
+  .btn-primary {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--black);
+    background: var(--accent);
+    padding: 1rem 2.2rem;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.15s, background 0.2s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); background: #1a40d6; }
+  .btn-secondary {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--white);
+    padding: 1rem 2.2rem;
+    border: 1px solid rgba(255,255,255,0.2);
+    text-decoration: none;
+    display: inline-block;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .hero-scroll {
+    position: absolute; bottom: 2rem; right: 4rem;
+    font-family: var(--font-ui);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    writing-mode: vertical-rl;
+    display: flex; align-items: center; gap: 0.8rem;
+    opacity: 0;
+    animation: fadeIn 1s 1.2s forwards;
+  }
+  .hero-scroll::before {
+    content: '';
+    width: 1px; height: 50px;
+    background: linear-gradient(to bottom, var(--accent), transparent);
+    display: block;
+  }
+
+  /* Stats strip */
+  .stats-strip {
+    background: var(--accent);
+    padding: 0.9rem 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .stats-track {
+    display: flex; gap: 0;
+    animation: ticker 25s linear infinite;
+    width: max-content;
+  }
+  .stats-item {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--black);
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+    padding: 0 2.5rem;
+    display: flex; align-items: center; gap: 2.5rem;
+  }
+  .stats-item::after {
+    content: '✦';
+    font-size: 0.6rem;
+  }
+
+  /* Section commons */
+  section { padding: 6rem 4rem; }
+  .section-label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.8rem;
+  }
+  .section-label::before {
+    content: '';
+    width: 24px; height: 1px;
+    background: var(--accent);
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1;
+    letter-spacing: 0.03em;
+    margin-bottom: 1rem;
+  }
+
+  /* Services */
+  #services { background: var(--surface); }
+  .services-intro {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 4rem; margin-bottom: 4rem;
+    align-items: end;
+  }
+  .services-desc {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.8;
+    max-width: 360px;
+    align-self: end;
+  }
+  .services-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .service-card {
+    background: var(--black);
+    padding: 2.2rem 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.25s;
+  }
+  .service-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .service-card:hover { background: var(--surface2); }
+  .service-card:hover::before { transform: scaleX(1); }
+  .service-card.featured { background: var(--surface2); }
+  .service-card.featured::before { transform: scaleX(1); }
+  .service-badge {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--black);
+    background: var(--accent);
+    padding: 0.2rem 0.6rem;
+    display: inline-block;
+    margin-bottom: 1.2rem;
+  }
+  .service-num {
+    font-family: var(--font-display);
+    font-size: 3.5rem;
+    color: rgba(255,255,255,0.06);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .service-name {
+    font-family: var(--font-ui);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 0.6rem;
+  }
+  .service-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+  .service-price {
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+  .service-price span {
+    font-family: var(--font-ui);
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-left: 0.3rem;
+  }
+
+  /* Portfolio */
+  #portfolio { background: var(--black); }
+  .portfolio-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 3rem;
+  }
+  .portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: auto auto;
+    gap: 12px;
+  }
+  .portfolio-item {
+    aspect-ratio: 4/5;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    cursor: none;
+  }
+  .portfolio-item:first-child {
+    grid-row: span 2;
+    aspect-ratio: unset;
+  }
+  .portfolio-item-inner {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem;
+    transition: transform 0.4s ease;
+  }
+  .portfolio-item:hover .portfolio-item-inner { transform: scale(1.03); }
+  .portfolio-mock {
+    width: 100%; flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+
+  /* Mock graphics */
+  .mock-commit {
+    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%);
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .mock-commit::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(4,41,198,0.15), transparent 60%);
+  }
+  .mock-commit .school-name {
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 3vw, 2.2rem);
+    color: #0429C6;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.3rem;
+    position: relative;
+  }
+  .mock-commit .committed-text {
+    font-family: var(--font-ui);
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  .mock-commit .athlete-box {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2a2a3e, #1a1a28);
+    border: 2px solid rgba(4,41,198,0.4);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0.5rem auto 0.8rem;
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    color: rgba(4,41,198,0.6);
+  }
+  .mock-commit .athlete-name {
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 2vw, 1.6rem);
+    color: white;
+    letter-spacing: 0.08em;
+  }
+  .mock-commit .sport-tag {
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: rgba(4,41,198,0.7);
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+  }
+
+  .mock-offer {
+    background: linear-gradient(160deg, #0d0d0d 0%, #1c1400 100%);
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 1.2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .mock-offer::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, transparent, #ffb800, transparent);
+  }
+  .mock-offer .offer-count {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: #ffb800;
+    line-height: 1;
+  }
+  .mock-offer .offer-label {
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+  .mock-offer .offer-school {
+    font-family: var(--font-display);
+    font-size: clamp(0.9rem, 2vw, 1.4rem);
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.05em;
+  }
+
+  .mock-stats {
+    background: linear-gradient(180deg, #080808 0%, #0e1a10 100%);
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .mock-stats::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 100%, rgba(0,200,80,0.1), transparent 60%);
+  }
+  .stat-row { display: flex; gap: 1rem; margin-bottom: 0.8rem; position: relative; }
+  .stat-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(0,200,80,0.2);
+    padding: 0.5rem 0.8rem;
+    text-align: center;
+    min-width: 55px;
+  }
+  .stat-val {
+    font-family: var(--font-display);
+    font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+    color: #00C850;
+    line-height: 1;
+  }
+  .stat-lbl {
+    font-family: var(--font-ui);
+    font-size: 0.5rem;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.35);
+    text-transform: uppercase;
+    margin-top: 0.2rem;
+  }
+
+  .mock-thumb {
+    background: linear-gradient(135deg, #0f0818 0%, #180820 100%);
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    align-items: flex-start; justify-content: flex-end;
+    padding: 1.2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .mock-thumb::before {
+    content: '▶';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    font-size: 2.5rem;
+    color: rgba(0,229,255,0.25);
+  }
+  .mock-thumb .thumb-label {
+    font-family: var(--font-display);
+    font-size: clamp(0.9rem, 2vw, 1.3rem);
+    color: white;
+    line-height: 1.1;
+    position: relative;
+  }
+  .mock-thumb .thumb-sub {
+    font-family: var(--font-ui);
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-top: 0.3rem;
+    position: relative;
+  }
+
+  .portfolio-overlay {
+    position: absolute; inset: 0;
+    background: rgba(8,8,8,0.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .portfolio-item:hover .portfolio-overlay { opacity: 1; }
+  .portfolio-overlay-title {
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 0.3rem;
+  }
+  .portfolio-overlay-price {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    color: var(--accent);
+  }
+
+  /* Process */
+  #process { background: var(--surface); }
+  .process-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 0; margin-top: 3rem;
+    border: 1px solid var(--border);
+  }
+  .process-step {
+    padding: 2.5rem 2rem;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .process-step:last-child { border-right: none; }
+  .process-step-num {
+    font-family: var(--font-display);
+    font-size: 5rem;
+    color: rgba(4,41,198,0.07);
+    line-height: 1;
+    margin-bottom: 1rem;
+  }
+  .process-step-title {
+    font-family: var(--font-ui);
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 0.6rem;
+  }
+  .process-step-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .process-step-icon {
+    position: absolute; top: 2.5rem; right: 2rem;
+    font-size: 1.5rem;
+    opacity: 0.4;
+  }
+
+  /* About strip */
+  .about-strip {
+    background: var(--black);
+    padding: 5rem 4rem;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 5rem; align-items: center;
+    border-top: 1px solid var(--border);
+  }
+  .about-quote {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.5vw, 3rem);
+    line-height: 1.15;
+    color: var(--white);
+  }
+  .about-quote em {
+    font-style: normal;
+    color: var(--accent);
+    font-size: 1.15em;
+  }
+  .about-body {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+  .about-cred {
+    display: flex; gap: 2rem; flex-wrap: wrap;
+  }
+  .cred-item { }
+  .cred-val {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .cred-label {
+    font-family: var(--font-ui);
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-top: 0.2rem;
+  }
+
+  /* CTA */
+  #contact {
+    background: var(--accent);
+    padding: 6rem 4rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #contact::before {
+    content: 'GLOBALGRAPHICS';
+    position: absolute;
+    font-family: var(--font-display);
+    font-size: 18vw;
+    color: rgba(0,0,0,0.06);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 0.02em;
+  }
+  .cta-title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 6rem);
+    color: var(--black);
+    line-height: 1;
+    letter-spacing: 0.03em;
+    margin-bottom: 1.2rem;
+    position: relative;
+  }
+  .cta-sub {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: rgba(0,0,0,0.6);
+    max-width: 380px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+    position: relative;
+  }
+  .cta-buttons { display: flex; gap: 1rem; justify-content: center; position: relative; }
+  .btn-dark {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--black);
+    padding: 1rem 2.2rem;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform 0.15s, background 0.2s;
+  }
+  .btn-dark:hover { transform: translateY(-2px); background: #111; }
+  .btn-outline-dark {
+    font-family: var(--font-ui);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--black);
+    background: transparent;
+    padding: 1rem 2.2rem;
+    border: 1.5px solid var(--black);
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-outline-dark:hover { background: rgba(0,0,0,0.08); }
+
+  /* Footer */
+  footer {
+    background: #050505;
+    padding: 2rem 4rem;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--border);
+  }
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+  .footer-logo span { color: var(--accent); }
+  .footer-links { display: flex; gap: 2rem; }
+  .footer-links a {
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .footer-links a:hover { color: var(--accent); }
+  .footer-copy {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.2);
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .reveal {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 900px) {
+    nav { padding: 1.2rem 1.5rem; }
+    .nav-links { display: none; }
+    .hero { padding: 0 1.5rem 3rem; }
+    section { padding: 4rem 1.5rem; }
+    .services-intro { grid-template-columns: 1fr; gap: 1.5rem; }
+    .services-grid { grid-template-columns: 1fr; }
+    .portfolio-grid { grid-template-columns: 1fr 1fr; }
+    .portfolio-item:first-child { grid-row: auto; }
+    .process-grid { grid-template-columns: 1fr 1fr; }
+    .process-step { border-bottom: 1px solid var(--border); }
+    .about-strip { grid-template-columns: 1fr; gap: 2rem; padding: 3rem 1.5rem; }
+    #contact { padding: 4rem 1.5rem; }
+    .cta-buttons { flex-direction: column; align-items: center; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; padding: 1.5rem; }
+    .footer-links { flex-wrap: wrap; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <a href="#" class="nav-logo">Global<span>Graphics</span></a>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#portfolio">Work</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="mailto:jpskiermont@icloud.com" class="nav-cta">Order Now</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <p class="hero-eyebrow">Athlete Graphics · Commitment Posts · Offer Announcements</p>
+  <h1 class="hero-title">
+    YOUR<br>
+    <span class="outline">MOMENT.</span><br>
+    <span class="accent">DESIGNED.</span>
+  </h1>
+  <p class="hero-sub">Premium graphics for committed athletes. Built by a player who knows exactly what this moment means.</p>
+  <div class="hero-actions">
+    <a href="#services" class="btn-primary">View Packages</a>
+    <a href="#portfolio" class="btn-secondary">See the Work</a>
+  </div>
+  <div class="hero-scroll">Scroll</div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stats-track">
+    <div class="stats-item">Commitment Posts</div>
+    <div class="stats-item">Offer Graphics</div>
+    <div class="stats-item">Recruiting Bundles</div>
+    <div class="stats-item">Season Recaps</div>
+    <div class="stats-item">Highlight Thumbnails</div>
+    <div class="stats-item">48hr Turnaround</div>
+    <div class="stats-item">All Sports</div>
+    <div class="stats-item">Commitment Posts</div>
+    <div class="stats-item">Offer Graphics</div>
+    <div class="stats-item">Recruiting Bundles</div>
+    <div class="stats-item">Season Recaps</div>
+    <div class="stats-item">Highlight Thumbnails</div>
+    <div class="stats-item">48hr Turnaround</div>
+    <div class="stats-item">All Sports</div>
+  </div>
+</div>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="services-intro">
+    <div>
+      <div class="section-label reveal">What We Offer</div>
+      <h2 class="section-title reveal">PACKAGES<br>& PRICING</h2>
+    </div>
+    <p class="services-desc reveal">Every graphic is custom-designed around you — your colors, your school, your moment. No templates. No generic output.</p>
+  </div>
+  <div class="services-grid reveal">
+    <div class="service-card">
+      <div class="service-num">01</div>
+      <div class="service-name">Commitment Post</div>
+      <p class="service-desc">The announcement graphic. Your school, your photo, your name — done right. Delivered in 48 hours with 2 revisions.</p>
+      <div class="service-price">$35 <span>/ post</span></div>
+    </div>
+    <div class="service-card">
+      <div class="service-num">02</div>
+      <div class="service-name">Offer Post</div>
+      <p class="service-desc">Announce each new offer as it comes in. School branding, offer count badge, clean execution.</p>
+      <div class="service-price">$20 <span>/ post</span></div>
+    </div>
+    <div class="service-card featured">
+      <div class="service-badge">Best Value</div>
+      <div class="service-num">03</div>
+      <div class="service-name">Recruiting Bundle</div>
+      <p class="service-desc">5 offer posts + 1 commitment post + 2 bonus graphics. Everything from first offer to signed day.</p>
+      <div class="service-price">$120 <span>/ season</span></div>
+    </div>
+    <div class="service-card">
+      <div class="service-num">04</div>
+      <div class="service-name">Highlight Thumbnail</div>
+      <p class="service-desc">YouTube and Hudl thumbnails optimized to get clicks from college coaches scrolling recruiting feeds.</p>
+      <div class="service-price">$25 <span>/ graphic</span></div>
+    </div>
+    <div class="service-card">
+      <div class="service-num">05</div>
+      <div class="service-name">Season Recap</div>
+      <p class="service-desc">End-of-season stats infographic. Goals, assists, awards — everything a coach wants to see at a glance.</p>
+      <div class="service-price">$40 <span>/ graphic</span></div>
+    </div>
+    <div class="service-card" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
+      <div style="font-family:var(--font-display); font-size:1.4rem; color:var(--muted); margin-bottom:0.5rem;">NEED SOMETHING CUSTOM?</div>
+      <p style="font-size:0.85rem; color:var(--muted); margin-bottom:1.2rem; line-height:1.6;">DM or email to discuss your idea.</p>
+      <a href="mailto:jpskiermont@icloud.com" class="btn-primary" style="font-size:0.8rem; padding:0.7rem 1.5rem;">Get in Touch</a>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section id="portfolio">
+  <div class="portfolio-header">
+    <div>
+      <div class="section-label reveal">Sample Work</div>
+      <h2 class="section-title reveal">THE WORK</h2>
+    </div>
+    <a href="mailto:jpskiermont@icloud.com" class="btn-secondary reveal" style="margin-bottom:0.5rem;">Order Yours →</a>
+  </div>
+  <div class="portfolio-grid reveal">
+    <div class="portfolio-item">
+      <div class="portfolio-item-inner" style="padding:0; flex-direction:column; gap:0;">
+        <img src="images/commitment-post-1.jpeg" style="width:100%; height:50%; object-fit:cover; flex-shrink:0; display:block;">
+        <img src="images/commitment-post-2.png" style="width:100%; height:50%; object-fit:cover; flex-shrink:0; display:block;">
+      </div>
+      <div class="portfolio-overlay">
+        <div class="portfolio-overlay-title">Commitment Post</div>
+        <div class="portfolio-overlay-price">$35</div>
+      </div>
+    </div>
+    <div class="portfolio-item">
+      <div class="portfolio-item-inner">
+        <div class="portfolio-mock">
+          <div class="mock-offer">
+            <div class="offer-label">Blessed to receive an offer from</div>
+            <div class="offer-school">DUKE UNIVERSITY</div>
+            <div class="offer-label" style="margin-top:0.5rem;">Offer #</div>
+            <div class="offer-count">12</div>
+          </div>
+        </div>
+      </div>
+      <div class="portfolio-overlay">
+        <div class="portfolio-overlay-title">Offer Post</div>
+        <div class="portfolio-overlay-price">$20</div>
+      </div>
+    </div>
+    <div class="portfolio-item">
+      <div class="portfolio-item-inner">
+        <div class="portfolio-mock">
+          <div class="mock-thumb">
+            <div class="thumb-label">2024–25<br>SEASON<br>HIGHLIGHTS</div>
+            <div class="thumb-sub">Watch Now · 4K</div>
+          </div>
+        </div>
+      </div>
+      <div class="portfolio-overlay">
+        <div class="portfolio-overlay-title">Highlight Thumbnail</div>
+        <div class="portfolio-overlay-price">$25</div>
+      </div>
+    </div>
+    <div class="portfolio-item">
+      <div class="portfolio-item-inner">
+        <div class="portfolio-mock">
+          <div class="mock-stats">
+            <div style="font-family:var(--font-ui); font-size:0.55rem; letter-spacing:0.2em; color:rgba(0,200,80,0.6); text-transform:uppercase; margin-bottom:0.8rem; position:relative;">2024–25 Season Recap</div>
+            <div class="stat-row">
+              <div class="stat-box"><div class="stat-val">23</div><div class="stat-lbl">Goals</div></div>
+              <div class="stat-box"><div class="stat-val">13</div><div class="stat-lbl">Assists</div></div>
+            </div>
+            <div class="stat-row">
+              <div class="stat-box"><div class="stat-val">MVP</div><div class="stat-lbl">District</div></div>
+              <div class="stat-box"><div class="stat-val">1st</div><div class="stat-lbl">All-Area</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="portfolio-overlay">
+        <div class="portfolio-overlay-title">Season Recap</div>
+        <div class="portfolio-overlay-price">$40</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="section-label reveal">How It Works</div>
+  <h2 class="section-title reveal">SIMPLE.<br>FAST. YOURS.</h2>
+  <div class="process-grid reveal">
+    <div class="process-step">
+      <div class="process-step-icon">📩</div>
+      <div class="process-step-num">01</div>
+      <div class="process-step-title">Place Your Order</div>
+      <p class="process-step-desc">DM on Instagram or email with your package choice, athlete photo, school, sport, and any specific details.</p>
+    </div>
+    <div class="process-step">
+      <div class="process-step-icon">🎨</div>
+      <div class="process-step-num">02</div>
+      <div class="process-step-title">Custom Design</div>
+      <p class="process-step-desc">Your graphic is built from scratch — your school colors, your branding, your style. No recycled templates.</p>
+    </div>
+    <div class="process-step">
+      <div class="process-step-icon">✏️</div>
+      <div class="process-step-num">03</div>
+      <div class="process-step-title">Review & Revise</div>
+      <p class="process-step-desc">Preview your graphic and request changes until it's exactly right. Revisions included in every package.</p>
+    </div>
+    <div class="process-step">
+      <div class="process-step-icon">🚀</div>
+      <div class="process-step-num">04</div>
+      <div class="process-step-title">Post & Go Viral</div>
+      <p class="process-step-desc">Receive your high-res file ready to post. Tag us when you drop it — we love seeing athletes get their moment.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<div class="about-strip">
+  <div class="about-quote reveal">
+    Built by an athlete.<br>
+    <em>For athletes.</em>
+  </div>
+  <div>
+    <p class="about-body reveal">GlobalGraphics was started by a D1 recruit — for recruits of all levels and sports. Every graphic is made with that understanding baked in.</p>
+    <div class="about-cred reveal">
+      <div class="cred-item">
+        <div class="cred-val">NCAA D1</div>
+        <div class="cred-label">Experience</div>
+      </div>
+      <div class="cred-item">
+        <div class="cred-val">48hr</div>
+        <div class="cred-label">Turnaround</div>
+      </div>
+      <div class="cred-item">
+        <div class="cred-val">All</div>
+        <div class="cred-label">Sports Welcome</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CTA -->
+<section id="contact">
+  <h2 class="cta-title">READY TO<br>ANNOUNCE?</h2>
+  <p class="cta-sub">Your commitment deserves more than a plain photo. Let's make it a moment people remember.</p>
+  <div class="cta-buttons">
+    <a href="mailto:jpskiermont@icloud.com" class="btn-dark">Email to Order</a>
+    <a href="https://instagram.com" class="btn-outline-dark">DM on Instagram</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Global<span>Graphics</span></div>
+  <div class="footer-links">
+    <a href="#services">Services</a>
+    <a href="#portfolio">Work</a>
+    <a href="#process">Process</a>
+    <a href="mailto:jpskiermont@icloud.com">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 GlobalGraphics</div>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx - 6}px, ${my - 6}px)`;
+  });
+
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) *.12;
+    ring.style.transform = `translate(${rx - 18}px, ${ry - 18}px)`;
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => cursor.style.transform += ' scale(2)');
+    el.addEventListener('mouseleave', () => {});
+  });
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
